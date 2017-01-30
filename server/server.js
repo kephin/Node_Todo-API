@@ -15,14 +15,13 @@ app.post('/todos', (req, res) => {
   todo
     .save()
     .then(doc => {
-      // console.log('Save succeedly', doc);
+      //status(200) is default
       res.send(doc);
     }, err => {
-      // console.log('Unable to save data', err);
       res.status(400).send(err);
     });
 });
 
 app.listen(3000, () => {
-  console.log('Start on part 3000...');
+  console.log('Start on port 3000...');
 });
