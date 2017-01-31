@@ -4,11 +4,20 @@ const request = require('supertest');
 const { app } = require('./../server');
 const { Todo } = require('./../models/todo');
 
+const testData = [{
+  text: 'Testing data #1',
+}, {
+  text: 'Testing data #2',
+}];
+
 //add testing life cycle method: beforeEach, which let us run some code before every single test case
-//we want to make sure DB is empty before any test
+//now we want to make DB has some data
 beforeEach(done => {
   Todo
     .remove({})
+    .then(() => {
+      return Todo.insertMany(testData);
+    })
     .then(() => done());
 });
 
@@ -31,7 +40,7 @@ describe('POST /todos', () => {
           return done(err);
         }
         //assert if the data got stored in mongoDB collection
-        Todo.find().then(todos => {
+        Todo.find({ text }).then(todos => {
           expect(todos.length).toBe(1);
           expect(todos[0].text).toBe(text);
           done();
@@ -49,10 +58,21 @@ describe('POST /todos', () => {
         if (err) return done(err);
 
         Todo.find().then(todos => {
-          expect(todos.length).toBe(0);
+          expect(todos.length).toBe(2);
           done();
         }).catch(err => done(err));
       });
   });
+});
 
+describe('GET /todos', () => {
+  it('should list all todos', (done) => {
+    request(app)
+      .get('/todos')
+      .expect(200)
+      .expect(res => {
+        expect(res.body.todos.length).toBe(2);
+      })
+      .end(done);
+  });
 });
