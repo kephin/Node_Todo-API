@@ -152,3 +152,59 @@ describe('DELETE /todos/:id', () => {
       .end(done);
   });
 });
+
+describe('PATCH /todos/:id', () => {
+  it('should update the todo', (done) => {
+    const patchData = {
+      text: 'learn node',
+      completed: true,
+    };
+
+    request(app)
+      .patch(`/todos/${testData[0]._id.toHexString()}`)
+      .send(patchData)
+      .expect(200)
+      .expect(res => {
+        expect(res.body.todo.text).toBe(patchData.text);
+        expect(res.body.todo.completed).toBe(patchData.completed);
+        expect(res.body.todo.completedAt).toBeA('number');
+      })
+      .end((err, res) => {
+        if (err) return done(err);
+
+        Todo
+          .findById(testData[0]._id.toHexString())
+          .then(todo => {
+            expect(todo.text).toBe(patchData.text);
+            expect(todo.completed).toBe(patchData.completed);
+            expect(todo.completedAt).toBeA('number');
+            done();
+          })
+          .catch(err => done(err));
+      });
+  });
+  it('should clear completedAt when todo is not completed', () => {
+    request(app)
+      .patch(`/todos/${testData[0]._id.toHexString()}`)
+      .send({
+        completed: false,
+      })
+      .expect(200)
+      .expect(res => {
+        expect(todo.body.completed).toBe(false);
+        expect(res.body.completedAt).toNotExist();
+      })
+      .end((err, res) => {
+        if (err) return done(err);
+
+        Todo
+          .findById(testData[0]._id.toHexString())
+          .then(todo => {
+            expect(todo.completed).toBe(false);
+            expect(todo.completedAt).toNotExist();
+            done();
+          })
+          .catch(err => done(err));
+      });
+  });
+});
