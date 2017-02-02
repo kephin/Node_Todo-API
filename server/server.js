@@ -61,10 +61,11 @@ app.delete('/todos/:id', (req, res) => {
 
 app.patch('/todos/:id', (req, res) => {
   const id = req.params.id;
+  // screen out properties that shouldn't be touched by user
   const body = _.pick(req.body, ['text', 'completed']);
 
   if (!ObjectID.isValid(id)) return res.status(404).send();
-
+  // logic between completed and completedAt
   if (typeof body.completed === 'boolean' && body.completed) {
     body.completedAt = new Date().getTime();
   } else {

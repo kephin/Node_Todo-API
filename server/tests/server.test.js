@@ -158,6 +158,7 @@ describe('PATCH /todos/:id', () => {
     const patchData = {
       text: 'learn node',
       completed: true,
+      shouldNotExist: 'wrong data',
     };
 
     request(app)
@@ -168,6 +169,7 @@ describe('PATCH /todos/:id', () => {
         expect(res.body.todo.text).toBe(patchData.text);
         expect(res.body.todo.completed).toBe(patchData.completed);
         expect(res.body.todo.completedAt).toBeA('number');
+        expect(res.body.todo.shouldNotExist).toNotExist();
       })
       .end((err, res) => {
         if (err) return done(err);
@@ -178,12 +180,14 @@ describe('PATCH /todos/:id', () => {
             expect(todo.text).toBe(patchData.text);
             expect(todo.completed).toBe(patchData.completed);
             expect(todo.completedAt).toBeA('number');
+            expect(todo.shouldNotExist).toNotExist();
             done();
           })
           .catch(err => done(err));
       });
   });
-  it('should clear completedAt when todo is not completed', () => {
+
+  it('should clear completedAt when todo is not completed', (done) => {
     request(app)
       .patch(`/todos/${testData[0]._id.toHexString()}`)
       .send({
@@ -191,8 +195,8 @@ describe('PATCH /todos/:id', () => {
       })
       .expect(200)
       .expect(res => {
-        expect(todo.body.completed).toBe(false);
-        expect(res.body.completedAt).toNotExist();
+        expect(res.body.todo.completed).toBe(false);
+        expect(res.body.todo.completedAt).toNotExist();
       })
       .end((err, res) => {
         if (err) return done(err);
