@@ -28,3 +28,19 @@ console.log(token);
 
 const decode = jwt.verify(token, 'secretInfo');
 console.log(decode);
+
+//=================================================
+
+const bcrypt = require('bcryptjs');
+
+const password = '123abc';
+
+bcrypt.genSalt(10, (err, salt) => {
+  bcrypt.hash(password, salt, (err, hash) => {
+    console.log(hash);
+  });
+});
+
+bcrypt.compare(password, '$2a$10$BeyqkmJenGHmj1Orwn99quKquqMMwl0WrYyzbVofioESwNvCHz756', (err, res) => {
+  console.log(res);
+});
