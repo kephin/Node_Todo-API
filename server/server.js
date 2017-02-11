@@ -15,27 +15,19 @@ const port = process.env.PORT;
 app.use(bodyParser.json());
 
 app.post('/todos', (req, res) => {
-  // console.log(req.body);
   const todo = new Todo(req.body);
 
   todo
     .save()
-    .then(doc => {
-      //status(200) is default
-      res.send(doc);
-    }, err => {
-      res.status(400).send(err);
-    });
+    .then(newTodo => res.send(newTodo))
+    .catch(err => res.status(400).send(err));
 });
 
 app.get('/todos', (req, res) => {
   Todo
     .find()
-    .then(todos => {
-      res.send({ todos });
-    }, err => {
-      res.status(400).send(err);
-    });
+    .then(todos => res.send({ todos }))
+    .catch(err => res.status(400).send(err));
 });
 
 app.get('/todos/:id', (req, res) => {
@@ -45,10 +37,10 @@ app.get('/todos/:id', (req, res) => {
   Todo
     .findById(id)
     .then(todo => {
-      if (todo) return res.send({ todo });
-      res.status(404).send();
+      if (!todo) return res.status(404).send();
+      res.send({ todo });
     })
-    .catch(err => res.status(400).send());
+    .catch(err => res.status(400).send(err));
 });
 
 app.delete('/todos/:id', (req, res) => {
@@ -58,22 +50,21 @@ app.delete('/todos/:id', (req, res) => {
   Todo
     .findByIdAndRemove(id)
     .then(todo => {
-      if (todo) return res.send({ todo });
-      res.status(404).send();
+      if (!todo) return res.status(404).send();
+      res.send({ todo });
     })
-    .catch(err => res.status(400).send());
+    .catch(err => res.status(400).send(err));
 });
 
 app.patch('/todos/:id', (req, res) => {
   const id = req.params.id;
-  // screen out properties that shouldn't be touched by user
+  // screen out properties that shouldn't be touched by clients
   const body = _.pick(req.body, ['text', 'completed']);
 
   if (!ObjectID.isValid(id)) return res.status(404).send();
   // logic between completed and completedAt
-  if (typeof body.completed === 'boolean' && body.completed) {
-    body.completedAt = new Date().getTime();
-  } else {
+  if (typeof body.completed === 'boolean' && body.completed) body.completedAt = new Date().getTime();
+  else {
     body.completed = false;
     body.completedAt = null;
   }
@@ -81,8 +72,8 @@ app.patch('/todos/:id', (req, res) => {
   Todo
     .findByIdAndUpdate(id, { $set: body }, { new: true })
     .then(todo => {
-      if (todo) return res.send({ todo });
-      res.status(404).send();
+      if (!todo) return res.status(404).send();
+      res.send({ todo });
     })
     .catch(err => res.status(400).send(err));
 });
@@ -93,10 +84,7 @@ app.post('/users', (req, res) => {
 
   user
     .save()
-    .then(user => {
-      // res.send(user);
-      return user.generateAuthToken();
-    })
+    .then(user => user.generateAuthToken())
     .then(token => {
       res
         .header('x-auth', token)
@@ -109,9 +97,7 @@ app.get('/users/me', authenticate, (req, res) => {
   res.send(req.user);
 });
 
-app.listen(port, () => {
-  console.log(`Listening on port ${port}`);
-});
+app.listen(port, () => console.log(`Listening on port ${port}`));
 
 module.exports = {
   app,
