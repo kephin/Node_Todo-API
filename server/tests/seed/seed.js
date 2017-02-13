@@ -18,6 +18,10 @@ const testUsers = [{
   _id: userTwoId,
   email: 'kevin@example.com',
   password: 'userTwoPass',
+  tokens: [{
+    access: 'auth',
+    token: jwt.sign({ _id: userTwoId, access: 'auth' }, 'abc123').toString(),
+  }],
 }];
 
 const populateUsers = (done) => {
@@ -34,9 +38,11 @@ const populateUsers = (done) => {
 const testTodos = [{
   _id: new ObjectID(),
   text: 'Testing data #1',
+  _creator: userOneId,
 }, {
   _id: new ObjectID(),
   text: 'Testing data #2',
+  _creator: userTwoId,
 }];
 
 const populateTodos = (done) => {
